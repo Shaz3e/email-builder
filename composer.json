@@ -1,0 +1,26 @@
+{
+    "name": "shaz3e/email-builder",
+    "description": "Create Email from frontend and use palceholder within email",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Shaz3e\\EmailBuilder\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Shaz3e\\EmailBuilder\\Providers\\EmailBuilderServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Shahrukh Akhtar",
+            "email": "iam@shaz3e.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
