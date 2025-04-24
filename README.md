@@ -1,10 +1,11 @@
-# Email Templates
+# Email Builder
+
+A Laravel package for managing email templates with dynamic placeholders.
 
 ![Packagist Version](https://img.shields.io/packagist/v/shaz3e/email-builder)
 ![Packagist Downloads](https://img.shields.io/packagist/dt/shaz3e/email-builder)
 ![License](https://img.shields.io/packagist/l/shaz3e/email-builder)
 ![Laravel Version](https://img.shields.io/badge/laravel-12.x-blue)
-
 
 Email Builder are pre-designed email messages that can be customized to fit your needs. They can be used to send automated emails, such as welcome emails, abandoned cart reminders, and order confirmations all emails will written in html and queueable mean there is no need to create additional jobs or mailable everytime for all your email and best thing is you can write your own email from dashboard and use template placeholders like `{{ name }}` in your email but you need to register placeholders in the specific email.
 
