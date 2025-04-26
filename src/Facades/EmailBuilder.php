@@ -11,9 +11,9 @@ class EmailBuilder extends Facade
         return 'emailbuilder'; // This should match the binding in your ServiceProvider
     }
 
-    public static function sendEmailByName($name, $toEmail, $data = [])
+    public static function sendEmailByName($user, string $templateName, array $data = [])
     {
-        return app('emailbuilder')->sendEmailByName($name, $toEmail, $data);
+        return app('emailbuilder')->sendEmailByName($user, $templateName, $data = []);
     }
 
     // Make sure this method is available in the facade
