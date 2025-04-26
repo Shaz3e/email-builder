@@ -120,43 +120,29 @@ class EmailBuilderService
     }
 
     /**
-     * Send an email based on the template name.
+     * Send an email using the template name.
      *
-     * @param  string  $name
-     * @param  string  $toEmail
-     * @param  array  $data
-     * @return void
+     * @param  mixed  $user  User object or email address
      */
-    public function sendEmailByName($name, $toEmail, $data = [])
+    public function sendEmailByName($user, string $templateName, array $data = []): void
     {
         try {
-            // Fetch the email template by
-            $template = EmailTemplate::where('name', $name)->firstOrFail();
+            $template = EmailTemplate::where('name', $templateName)->firstOrFail();
 
-            // Replace placeholders in the template content and subject
-            $content = $this->replacePlaceholders($template->content, $data);
-            $subject = $this->replacePlaceholders($template->subject, $data);
-
-            // Send the email
-            Mail::to($toEmail)->send(new EmailTemplateMail($subject, $content));
+            Mail::to($this->resolveEmail($user))
+                ->send(new EmailTemplateMail($user, $templateName, $data));
         } catch (Exception $e) {
-            Log::error("Email sending failed for name $name: ".$e->getMessage());
+            Log::error("Email sending failed for template [$templateName]: ".$e->getMessage());
         }
     }
 
     /**
-     * Replace placeholders in the template content.
-     *
-     * @param  string  $template
-     * @param  array  $data
-     * @return string
+     * Resolve the email address from a User model or direct email string.
      */
-    protected function replacePlaceholders($template, $data)
+    protected function resolveEmail($user): string
     {
-        return preg_replace_callback('/\{\{\s*(\w+)\s*\}\}/', function ($matches) use ($data) {
-            $placeholder = $matches[1];
-
-            return $data[$placeholder] ?? ''; // Default to empty string if placeholder not provided
-        }, $template);
+        return is_object($user) && method_exists($user, 'getEmailForNotification')
+            ? $user->getEmailForNotification()
+            : (is_object($user) ? $user->email : $user);
     }
 }

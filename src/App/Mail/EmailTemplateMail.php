@@ -2,13 +2,13 @@
 
 namespace Shaz3e\EmailBuilder\App\Mail;
 
-use Shaz3e\EmailBuilder\App\Models\EmailTemplate;
-use Shaz3e\EmailBuilder\App\Models\GlobalEmailTemplate;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Shaz3e\EmailBuilder\App\Models\EmailTemplate;
+use Shaz3e\EmailBuilder\App\Models\GlobalEmailTemplate;
 
 class EmailTemplateMail extends Mailable
 {
@@ -20,22 +20,22 @@ class EmailTemplateMail extends Mailable
 
     protected $data;
 
-    protected $header;
+    protected $globalHeader;
 
-    protected $footer;
+    protected $globalFooter;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user, $templateName, array $data = [])
+    public function __construct($user, string $templateName, array $data = [])
     {
         $this->user = $user;
-        $this->template = EmailTemplate::where('name', $templateName)->first();
         $this->data = $data;
+        $this->template = EmailTemplate::where('name', $templateName)->firstOrFail();
 
-        // Fetch the global header and footer (if available)
-        $this->header = GlobalEmailTemplate::where('default_header', true)->value('header');
-        $this->footer = GlobalEmailTemplate::where('default_footer', true)->value('footer');
+        // Preload global header and footer once
+        $this->globalHeader = GlobalEmailTemplate::where('default_header', true)->value('header') ?? '';
+        $this->globalFooter = GlobalEmailTemplate::where('default_footer', true)->value('footer') ?? '';
     }
 
     /**
@@ -44,7 +44,7 @@ class EmailTemplateMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->template ? $this->replacePlaceholders($this->template->subject) : 'Default Subject',
+            subject: $this->parseContent($this->template->subject ?? 'No Subject')
         );
     }
 
@@ -54,20 +54,18 @@ class EmailTemplateMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.template',
+            view: 'email-builder::emails.template',
             with: [
-                'subject' => $this->replacePlaceholders($this->template->subject ?? 'Default Subject'),
-                'header' => $this->replacePlaceholders($this->template->header ?? $this->header),
-                'body' => $this->replacePlaceholders($this->template->body ?? 'Default Email Content'),
-                'footer' => $this->replacePlaceholders($this->template->footer ?? $this->footer),
+                'subject' => $this->parseContent($this->template->subject ?? 'No Subject'),
+                'header' => $this->getHeader(),
+                'body' => $this->parseContent($this->template->body ?? 'No Content'),
+                'footer' => $this->getFooter(),
             ],
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {
@@ -75,24 +73,41 @@ class EmailTemplateMail extends Mailable
     }
 
     /**
-     * Replace placeholders in the email template.
+     * Resolve which header to use and replace placeholders.
      */
-    private function replacePlaceholders(string $content): string
+    protected function getHeader(): string
     {
-        if (! $this->template) {
-            return $content;
+        $header = $this->template->header ?? $this->globalHeader;
+
+        return $this->parseContent($header);
+    }
+
+    /**
+     * Resolve which footer to use and replace placeholders.
+     */
+    protected function getFooter(): string
+    {
+        $footer = $this->template->footer ?? $this->globalFooter;
+
+        return $this->parseContent($footer);
+    }
+
+    /**
+     * Replace placeholders inside the given content.
+     */
+    protected function parseContent(?string $content): string
+    {
+        if (is_null($content)) {
+            return '';
         }
 
-        // Decode stored placeholders from database
-        $placeholders = json_decode($this->template->placeholders, true) ?? [];
+        $placeholders = $this->template->placeholders ?? []; // Already array, no decoding!
 
-        // Generate replacement array
-        $replace = [];
+        $replacements = [];
         foreach ($placeholders as $placeholder) {
-            $replace['{'.$placeholder.'}'] = $this->data[$placeholder] ?? '';
+            $replacements['{'.$placeholder.'}'] = $this->data[$placeholder] ?? '';
         }
 
-        // Replace placeholders with actual values
-        return str_replace(array_keys($replace), array_values($replace), $content);
+        return str_replace(array_keys($replacements), array_values($replacements), $content);
     }
 }

@@ -8,6 +8,11 @@ use Shaz3e\EmailBuilder\Services\EmailBuilderService;
 
 class EmailBuilderServiceProvider extends ServiceProvider
 {
+    public function boot()
+    {
+        $this->loadViewsFrom(__DIR__.'/../views', 'email-builder');
+    }
+
     public function register()
     {
         $this->app->singleton(EmailBuilderService::class, function ($app) {
@@ -30,6 +35,11 @@ class EmailBuilderServiceProvider extends ServiceProvider
 
     protected function publishAssets()
     {
+        // Views
+        $this->publishes([
+            __DIR__.'/../views' => resource_path('views/vendor/email-builder'),
+        ], 'email-builder-views');
+
         // Config
         $this->publishes([
             __DIR__.'/../config/email-builder.php' => config_path('email-builder.php'),
