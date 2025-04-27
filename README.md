@@ -22,6 +22,11 @@ composer require shaz3e/email-builder
 
 #### Publisables
 
+Publiss views only
+```bash
+php artisan vendor:publish --email-builder-views
+```
+
 Publish config only
 
 ```bash
@@ -120,16 +125,17 @@ class EmailTemplateController extends Controller
 ```php
 // Than use anywhere where you want to send email
 // Create instance of emailBuilder
-$emailBuilder = new EmailBuilder();
+use Shaz3e\EmailBuilder\Services\EmailBuilderService;
+$email = new EmailBuilderService;
 
-$user = User::findOrFail(1);
+$user = User::findOrFail(1); // Send this user an email
 
-$verification_link = route('verification');
+$verification_link = route('verification'); // use this route from routes
 
-$emailBuilder->sendEmailByName('welcome_email', $user->email, [
-    'name' => $user->name, // placeholder
-    'verification_link' => $verification_link, // placeholder
-    'app_name' => config('app.name'), // placeholder
+$email->sendEmailByKey('welcome_email', $user->email, [
+    'app_name' => config('app.name'),
+    'name' => $user->name,
+    'app_url' => $verification_link,
 ]);
 ```
 

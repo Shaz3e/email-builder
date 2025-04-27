@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
-            $table->longText('header')->nullable();
-            $table->longText('footer')->nullable();
-            $table->string('name')->unique();
+            $table->string('header_image')->nullable();
+            $table->longText('header_text')->nullable();
+            $table->string('header_text_color')->nullable();
+            $table->string('header_background_color')->nullable();
+            $table->string('footer_image')->nullable();
+            $table->longText('footer_text')->nullable();
+            $table->string('footer_text_color')->nullable();
+            $table->string('footer_background_color')->nullable();
+            $table->string('footer_bottom_image')->nullable();
+            $table->string('key')->unique();
+            $table->string('name');
             $table->text('subject');
             $table->longText('body');
             $table->json('placeholders')->nullable();

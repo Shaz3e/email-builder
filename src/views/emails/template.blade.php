@@ -7,9 +7,31 @@
 </head>
 
 <body>
-    <div>
-        {!! $body !!}
-    </div>
+    @if ($header_image)
+        <img src="{{ $header_image }}" />
+    @endif
+
+    @if ($header_text)
+        <div style="color: {{ $header_text_color }}; background-color:{{ $header_background_color }}">
+            {!! $header_text !!}
+        </div>
+    @endif
+
+    {!! $body !!}
+
+    @if ($footer_image)
+        <img src="{{ $footer_image }}" />
+    @endif
+
+    @if ($footer_text)
+        <div style="color: {{ $footer_text_color }};background-color: {{ $footer_background_color }}">
+            {!! $footer_text !!}
+        </div>
+    @endif
+
+    @if ($footer_bottom_image)
+        <img src="{{ $footer_bottom_image }}" />
+    @endif
 </body>
 
 </html>
