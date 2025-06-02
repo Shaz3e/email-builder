@@ -7,12 +7,14 @@ A Laravel package for managing email templates with dynamic placeholders.
 ![License](https://img.shields.io/packagist/l/shaz3e/email-builder)
 ![Laravel Version](https://img.shields.io/badge/laravel-12.x-blue)
 
-Email Builder are pre-designed email messages that can be customized to fit your needs. They can be used to send automated emails, such as welcome emails, abandoned cart reminders, and order confirmations all emails will written in html and queueable mean there is no need to create additional jobs or mailable everytime for all your email and best thing is you can write your own email from dashboard and use template placeholders like `{{ name }}` in your email but you need to register placeholders in the specific email.
+## Introduction
 
-Before proceeding the installation steps please read the complete documention to take only the step which is necessary for your application. We suggest only publish config file as this may be necessary to manage prefix, routes and middleware and only publish views when you need to modify it. It built with livewire grid view which poll data only visible mode.
+Email Builder allows you to define and manage email templates directly from your dashboard using dynamic placeholders like {{ name }}. You can use it to send system-generated emails such as:
+ - Welcome emails
+ - Order confirmations
+ - Abandoned cart reminders
 
-**Note**
-This package is built for [S3 Dashboard](https://github.com/Shaz3e/S3-Dashboard) and require extra efforts to use with any laravel application.
+No need to write a new Mailable class or job each time — everything is managed dynamically and queueable, based on config.
 
 Install via composer
 
@@ -24,7 +26,7 @@ composer require shaz3e/email-builder
 
 Publiss views only
 ```bash
-php artisan vendor:publish --email-builder-views
+php artisan vendor:publish --tag=email-builder-views
 ```
 
 Publish config only

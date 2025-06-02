@@ -186,14 +186,31 @@ class EmailBuilderService
             // Find the email template by key
             $template = EmailTemplate::where('key', $key)->firstOrFail();
 
-            // Send the email using the email template
-            Mail::to($toEmail)->send(new EmailTemplateMail($key, $toEmail, $data));
+            // Create the mailable instance
+            $mailable = new EmailTemplateMail($key, $toEmail, $data);
+
+            // Check config to decide whether to queue or send immediately
+            if (config('email-builder.queue_emails')) {
+                Mail::to($toEmail)->queue($mailable);
+                if (config('email-builder.log_info')) {
+                    Log::info("Email queued for template [$key] to [$toEmail]");
+                }
+            } else {
+                Mail::to($toEmail)->send($mailable);
+                if (config('email-builder.log_info')) {
+                    Log::info("Email sent for template [$key] to [$toEmail]");
+                }
+            }
 
             // Log the email sending result
-            Log::info("Email sent for template [$key] to [$toEmail]");
+            if (config('email-builder.log_info')) {
+                Log::info("Email sent for template [$key] to [$toEmail]");
+            }
         } catch (Exception $e) {
             // Log the error if email sending fails
-            Log::error("Email sending failed for template [$key]: ".$e->getMessage());
+            if (config('email-builder.log_info')) {
+                Log::error("Email sending failed for template [$key]: ".$e->getMessage());
+            }
         }
     }
 }

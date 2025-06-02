@@ -8,7 +8,7 @@
 
 <body>
     @if ($header_image)
-        <img src="{{ $header_image }}" />
+        <img src="{{ asset($header_image) }}" />
     @endif
 
     @if ($header_text)
@@ -20,7 +20,7 @@
     {!! $body !!}
 
     @if ($footer_image)
-        <img src="{{ $footer_image }}" />
+        <img src="{{ asset($footer_image) }}" />
     @endif
 
     @if ($footer_text)
@@ -30,7 +30,7 @@
     @endif
 
     @if ($footer_bottom_image)
-        <img src="{{ $footer_bottom_image }}" />
+        <img src="{{ asset($footer_bottom_image) }}" />
     @endif
 </body>
 
