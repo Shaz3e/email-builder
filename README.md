@@ -24,7 +24,7 @@ composer require shaz3e/email-builder
 
 #### Publisables
 
-Publiss views only
+Publish views only
 ```bash
 php artisan vendor:publish --tag=email-builder-views
 ```
