@@ -27,6 +27,8 @@ return new class extends Migration
             $table->text('subject');
             $table->longText('body');
             $table->json('placeholders')->nullable();
+            $table->boolean('header')->default(false);
+            $table->boolean('footer')->default(false);
             $table->timestamps();
         });
     }
