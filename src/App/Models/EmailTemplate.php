@@ -32,6 +32,9 @@ class EmailTemplate extends Model
         'subject',
         'body',
         'placeholders',
+
+        'header',
+        'footer',
     ];
 
     /**
@@ -41,6 +44,8 @@ class EmailTemplate extends Model
      */
     protected $casts = [
         'placeholders' => 'array',  // Automatically casts JSON to array
+        'header' => 'boolean',
+        'footer' => 'boolean',
     ];
 
     /**
