@@ -103,37 +103,46 @@ class EmailTemplate extends Model
         $this->attributes['key'] = $key;
     }
 
+
     /**
-     * Mutator for the placeholders attribute.
+     * Set the placeholders attribute, converting it to a normalized format.
      *
-     * This method formats the input value for storage in the 'placeholders' attribute.
-     * If the value is null, it stores an empty JSON array. If the value is a string,
-     * it is converted to lowercase, and spaces or commas are replaced to create an array.
-     * Any empty values or duplicates are removed from the array before it is saved as JSON.
+     * This method ensures that the value is always stored as a JSON array of
+     * strings, regardless of the format of the input value. It also sanitizes
+     * each placeholder by removing all characters except a-z, 0-9, and
+     * underscores, and converting all spaces to underscores. Finally, it
+     * removes all empty entries and removes duplicates.
      *
-     * @param  string|array|null  $value  The input value to be processed and stored.
+     * @param  string|array  $value
      * @return void
      */
     public function setPlaceholdersAttribute($value)
     {
-        // Check if the value is null
+        // If null, store an empty JSON array
         if (is_null($value)) {
-            // Assign an empty JSON array to the 'placeholders' attribute
             $this->attributes['placeholders'] = json_encode([]);
 
             return;
         }
 
-        // If the value is a string, process it into an array
+        // Convert comma/space-separated string to array if needed
         if (is_string($value)) {
-            // Convert the string to lowercase and split by comma or whitespace
             $value = preg_split('/[\s,]+/', strtolower($value));
         }
 
-        // Filter out empty values and ensure unique entries
-        $placeholders = array_unique(array_filter($value));
+        // Sanitize each placeholder
+        $placeholders = array_map(function ($placeholder) {
+            // Convert spaces to underscores
+            $placeholder = str_replace(' ', '_', $placeholder);
 
-        // Store the processed array as a JSON string in the 'placeholders' attribute
+            // Remove all characters except a-z, 0-9, and underscores
+            return preg_replace('/[^a-z0-9_]/', '', $placeholder);
+        }, $value);
+
+        // Filter out empty entries and remove duplicates
+        $placeholders = array_unique(array_filter($placeholders));
+
+        // Store as JSON
         $this->attributes['placeholders'] = json_encode($placeholders);
     }
 }
