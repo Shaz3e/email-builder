@@ -81,7 +81,8 @@ class EmailTemplate extends Model
      *
      * This method transforms the input value by converting it to lowercase,
      * replacing spaces with underscores, removing consecutive underscores,
-     * and trimming leading/trailing underscores. This is done to ensure that
+     * and converting all special character to underscores, and then
+     * trimming leading/trailing underscores. This is done to ensure that
      * the key is always in a consistent format, regardless of the format of
      * the input value.
      *
@@ -90,16 +91,16 @@ class EmailTemplate extends Model
      */
     public function setKeyAttribute($value)
     {
-        // Transform the name value to a normalized format
-        $this->attributes['key'] = strtolower(
-            // Replace multiple spaces with a single underscore
-            preg_replace(
-                ['/ +/', '/_+/', '/^_+|_+$/'], // Patterns to match
-                ['_', '_', ''],                // Replacements for the patterns
-                // Replace spaces with underscores
-                str_replace(' ', '_', $value)
-            )
-        );
+        $key = strtolower($value);
+
+        // Replace any character that is not a-z, 0-9 with underscores
+        $key = preg_replace('/[^a-z0-9]+/', '_', $key);
+
+        // Trim leading/trailing underscores
+        $key = trim($key, '_');
+
+        // Assign to attribute
+        $this->attributes['key'] = $key;
     }
 
     /**
