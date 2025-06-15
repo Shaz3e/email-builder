@@ -10,9 +10,10 @@ A Laravel package for managing email templates with dynamic placeholders.
 ## Introduction
 
 Email Builder allows you to define and manage email templates directly from your dashboard using dynamic placeholders like {{ name }}. You can use it to send system-generated emails such as:
- - Welcome emails
- - Order confirmations
- - Abandoned cart reminders
+
+- Welcome emails
+- Order confirmations
+- Abandoned cart reminders
 
 No need to write a new Mailable class or job each time — everything is managed dynamically and queueable, based on config.
 
@@ -24,24 +25,85 @@ composer require shaz3e/email-builder
 
 #### Publisables
 
-Publish views only
+Publish views
+
 ```bash
 php artisan vendor:publish --tag=email-builder-views
 ```
 
-Publish config only
+Publish config (Recommended)
 
 ```bash
 php artisan vendor:publish --tag=email-builder-config
 ```
 
-Publish migrations only
+Publish migrations (Setup config file before migration)
 
 ```bash
 php artisan vendor:publish --tag=email-builder-migrations
 ```
 
+Config File
+
+```php
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | Image Upload Settings
+    |--------------------------------------------------------------------------
+    |
+    | These options control the validation for image uploads. You can define
+    | the allowed file extensions and the maximum file size (in kilobytes).
+    | The default max size is 2048 KB, which equals 2 MB.
+    |
+    */
+    'image' => [
+        'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif'],
+        'max_size' => 2048, // in KB (2MB)
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Emails
+    |--------------------------------------------------------------------------
+    |
+    | This option determines whether emails should be queued or sent
+    | immediately. When set to true, all emails will be queued and processed
+    | by a queue worker. When false, emails will be sent instantly.
+    |
+    */
+    'queue_emails' => true, // or false
+
+    /*
+    |--------------------------------------------------------------------------
+    | Log Email Info
+    |--------------------------------------------------------------------------
+    |
+    | Enable this option to log info-level messages when emails are sent or
+    | queued successfully. Useful for debugging or monitoring email flow.
+    |
+    */
+    'log_info' => false, // or false
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Template Body Column Type
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the database column type used for storing the email
+    | template body content. You may choose between 'text', 'longText', or
+    | 'json' based on your expected content size and structure.
+    |
+    | Supported: "text", "longText", "json"
+    |
+    */
+    'body_column_type' => 'longText',
+];
+
+```
+
 Example Usage Anywhere in Laravel
+
 ```php
 namespace App\Http\Controllers;
 
@@ -51,12 +113,12 @@ use Shaz3e\EmailBuilder\Facades\EmailBuilder;
 
 class EmailTemplateController extends Controller
 {
-    
+
     public function index()
     {
         return EmailBuilder::allTemplates();
     }
-    
+
     public function create()
     {
         return view('email-builders.create');
@@ -75,14 +137,14 @@ class EmailTemplateController extends Controller
         // Redirect to the index page after saving
         return redirect()->route('email-templates.show', $email);
     }
-    
+
     public function show(string $id)
     {
         $email = EmailBuilder::getTemplate($id);
 
         return $email;
     }
-    
+
     public function edit(string $id)
     {
         $email = EmailTemplate::find($id);
@@ -91,7 +153,7 @@ class EmailTemplateController extends Controller
 
         return view('email-builders.edit', compact('email', 'placeholders'));
     }
-    
+
     public function update(Request $request, string $id)
     {
         // Validate incoming request
@@ -114,6 +176,7 @@ class EmailTemplateController extends Controller
 ```
 
 Use Request or Valdiation within Controller
+
 ```php
 use App\Rules\ImageRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -185,6 +248,7 @@ class StoreEmailTemplateRequest extends FormRequest
 ```
 
 Create Image Rule and take advantage of config/email-builder rules
+
 ```php
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -266,18 +330,19 @@ $email->sendEmailByKey('welcome_email', $user->email, [
 ]);
 ```
 
-
 #### Contributing
 
-* If you have any suggestions please let me know : https://github.com/Shaz3e/email-builder/pulls.
-* Please help me improve code https://github.com/Shaz3e/email-builder/pulls
+- If you have any suggestions please let me know : https://github.com/Shaz3e/email-builder/pulls.
+- Please help me improve code https://github.com/Shaz3e/email-builder/pulls
 
 #### License
+
 Email Builder with [S3 Dashboard](https://github.com/Shaz3e/S3-Dashboard) is licensed under the MIT license. Enjoy!
 
 ## Credit
-* [Shaz3e](https://www.shaz3e.com) | [YouTube](https://www.youtube.com/@shaz3e) | [Facebook](https://www.facebook.com/shaz3e) | [Twitter](https://twitter.com/shaz3e) | [Instagram](https://www.instagram.com/shaz3e) | [LinkedIn](https://www.linkedin.com/in/shaz3e/)
-* [Diligent Creators](https://www.diligentcreators.com) | [Facebook](https://www.facebook.com/diligentcreators) | [Instagram](https://www.instagram.com/diligentcreators/) | [Twitter](https://twitter.com/diligentcreator) | [LinkedIn](https://www.linkedin.com/company/diligentcreators/) | [Pinterest](https://www.pinterest.com/DiligentCreators/) | [YouTube](https://www.youtube.com/@diligentcreator) [TikTok](https://www.tiktok.com/@diligentcreators) | [Google Map](https://g.page/diligentcreators)
+
+- [Shaz3e](https://www.shaz3e.com) | [YouTube](https://www.youtube.com/@shaz3e) | [Facebook](https://www.facebook.com/shaz3e) | [Twitter](https://twitter.com/shaz3e) | [Instagram](https://www.instagram.com/shaz3e) | [LinkedIn](https://www.linkedin.com/in/shaz3e/)
+- [Diligent Creators](https://www.diligentcreators.com) | [Facebook](https://www.facebook.com/diligentcreators) | [Instagram](https://www.instagram.com/diligentcreators/) | [Twitter](https://twitter.com/diligentcreator) | [LinkedIn](https://www.linkedin.com/company/diligentcreators/) | [Pinterest](https://www.pinterest.com/DiligentCreators/) | [YouTube](https://www.youtube.com/@diligentcreator) [TikTok](https://www.tiktok.com/@diligentcreators) | [Google Map](https://g.page/diligentcreators)
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/shaz3e/email-builder)
 

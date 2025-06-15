@@ -38,4 +38,18 @@ return [
     |
     */
     'log_info' => false, // or false
+
+    /*
+    |--------------------------------------------------------------------------
+    | Email Template Body Column Type
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the database column type used for storing the email
+    | template body content. You may choose between 'text', 'longText', or
+    | 'json' based on your expected content size and structure.
+    |
+    | Supported: "text", "longText", "json"
+    |
+    */
+    'body_column_type' => 'longText',
 ];

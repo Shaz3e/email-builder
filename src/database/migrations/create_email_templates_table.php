@@ -25,7 +25,17 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->string('name');
             $table->text('subject');
-            $table->longText('body');
+
+            // Dynamic content column
+            $columnType = config('email-builder.body_column_type', 'longText');
+            match ($columnType) {
+                'text' => $table->text('body'),
+                'json' => $table->json('body'),
+                'longText' => $table->longText('body'),
+                default => $table->longText('body'), // fallback
+            };
+
+            
             $table->json('placeholders')->nullable();
             $table->boolean('header')->default(false);
             $table->boolean('footer')->default(false);
