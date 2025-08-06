@@ -23,7 +23,7 @@ Install via composer
 composer require shaz3e/email-builder
 ```
 
-#### Publisables
+#### Publishables
 
 Publish views
 
