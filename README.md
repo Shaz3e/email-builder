@@ -194,6 +194,14 @@ class StoreEmailTemplateRequest extends FormRequest
 
     /**
      * Prepare the data for validation.
+     *
+     * This method is called before the `rules` method and allows you to modify the
+     * request data before it is validated.
+     *
+     * In this case, we are setting the 'header' and 'footer' fields to 1 or 0
+     * based on whether they are present in the request, and we are also
+     * sanitizing the 'key' field by converting it to lowercase and replacing
+     * any non-alphanumeric characters with underscores.
      */
     protected function prepareForValidation(): void
     {
@@ -201,6 +209,12 @@ class StoreEmailTemplateRequest extends FormRequest
             'header' => $this->has('header') ? 1 : 0,
             'footer' => $this->has('footer') ? 1 : 0,
         ]);
+
+        if ($this->has('key')) {
+            $this->merge([
+                'key' => $this->sanitizeKey($this->input('key')),
+            ]);
+        }
     }
 
     /**
@@ -243,6 +257,21 @@ class StoreEmailTemplateRequest extends FormRequest
             'header' => ['required', 'in:0,1'],
             'footer' => ['required', 'in:0,1'],
         ];
+    }
+
+    /**
+     * Sanitize the given key by converting it to lowercase, replacing non-alphanumeric
+     * characters with underscores, and trimming any leading or trailing underscores.
+     *
+     * @param string $value The key to sanitize.
+     * @return string The sanitized key.
+     */
+    protected function sanitizeKey($value)
+    {
+        $key = strtolower($value);
+        $key = preg_replace('/[^a-z0-9]+/', '_', $key);
+
+        return trim($key, '_');
     }
 }
 ```
