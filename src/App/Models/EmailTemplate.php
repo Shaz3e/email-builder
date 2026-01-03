@@ -33,8 +33,8 @@ class EmailTemplate extends Model
         'body',
         'placeholders',
 
-        'header',
-        'footer',
+        'use_global_header',
+        'use_global_footer',
     ];
 
     /**
@@ -44,9 +44,19 @@ class EmailTemplate extends Model
      */
     protected $casts = [
         'placeholders' => 'array',  // Automatically casts JSON to array
-        'header' => 'boolean',
-        'footer' => 'boolean',
+        'use_global_header' => 'boolean',
+        'use_global_footer' => 'boolean',
     ];
+
+    public function usesGlobalHeader(): bool
+    {
+        return (bool) $this->use_global_header;
+    }
+
+    public function usesGlobalFooter(): bool
+    {
+        return (bool) $this->use_global_footer;
+    }
 
     /**
      * Render the content with provided placeholders replaced.
@@ -102,7 +112,6 @@ class EmailTemplate extends Model
         // Assign to attribute
         $this->attributes['key'] = $key;
     }
-
 
     /**
      * Set the placeholders attribute, converting it to a normalized format.

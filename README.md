@@ -11,9 +11,9 @@ A Laravel package for managing email templates with dynamic placeholders.
 
 Email Builder allows you to define and manage email templates directly from your dashboard using dynamic placeholders like {{ name }}. You can use it to send system-generated emails such as:
 
-- Welcome emails
-- Order confirmations
-- Abandoned cart reminders
+-   Welcome emails
+-   Order confirmations
+-   Abandoned cart reminders
 
 No need to write a new Mailable class or job each time — everything is managed dynamically and queueable, based on config.
 
@@ -194,23 +194,15 @@ class StoreEmailTemplateRequest extends FormRequest
 
     /**
      * Prepare the data for validation.
-     *
-     * This method is called before the `rules` method and allows you to modify the
-     * request data before it is validated.
-     *
-     * In this case, we are setting the 'header' and 'footer' fields to 1 or 0
-     * based on whether they are present in the request, and we are also
-     * sanitizing the 'key' field by converting it to lowercase and replacing
-     * any non-alphanumeric characters with underscores.
      */
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'header' => $this->has('header') ? 1 : 0,
-            'footer' => $this->has('footer') ? 1 : 0,
+            'use_global_header' => $this->boolean('use_global_header') ? 1 : 0,
+            'use_global_footer' => $this->boolean('use_global_footer') ? 1 : 0,
         ]);
 
-        if ($this->has('key')) {
+        if ($this->filled('key')) {
             $this->merge([
                 'key' => $this->sanitizeKey($this->input('key')),
             ]);
@@ -225,25 +217,32 @@ class StoreEmailTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'use_global_header' => ['required', 'in:0,1'],
+            'use_global_footer' => ['required', 'in:0,1'],
+
             'header_image' => [
                 'nullable',
-                new ImageRule, // Create Image Rule
+                'required_if:use_global_header,0',
+                new ImageRule,
             ],
-            'header_text' => ['nullable', 'string'],
-            'header_text_color' => ['nullable', 'string'],
-            'header_background_color' => ['nullable', 'string'],
+            'header_text' => ['required_if:use_global_header,0', 'string'],
+            'header_text_color' => ['required_if:use_global_header,0', 'string'],
+            'header_background_color' => ['required_if:use_global_header,0', 'string'],
 
             'footer_image' => [
                 'nullable',
-                new ImageRule, // Create Image Rule
+                'required_if:use_global_footer,0',
+                new ImageRule,
             ],
-            'footer_text' => ['nullable', 'string'],
-            'footer_text_color' => ['nullable', 'string'],
-            'footer_background_color' => ['nullable', 'string'],
+            'footer_text' => ['required_if:use_global_footer,0', 'string'],
+            'footer_text_color' => ['required_if:use_global_footer,0', 'string'],
+            'footer_background_color' => ['required_if:use_global_footer,0', 'string'],
             'footer_bottom_image' => [
                 'nullable',
-                new ImageRule, // Create Image Rule
+                'required_if:use_global_footer,0',
+                new ImageRule,
             ],
+
             'key' => [
                 'required',
                 'string',
@@ -254,8 +253,6 @@ class StoreEmailTemplateRequest extends FormRequest
             'subject' => ['required', 'string', 'min:3', 'max:255'],
             'body' => ['required', 'string'],
             'placeholders' => ['nullable', 'string'],
-            'header' => ['required', 'in:0,1'],
-            'footer' => ['required', 'in:0,1'],
         ];
     }
 
@@ -263,7 +260,7 @@ class StoreEmailTemplateRequest extends FormRequest
      * Sanitize the given key by converting it to lowercase, replacing non-alphanumeric
      * characters with underscores, and trimming any leading or trailing underscores.
      *
-     * @param string $value The key to sanitize.
+     * @param  string  $value  The key to sanitize.
      * @return string The sanitized key.
      */
     protected function sanitizeKey($value)
@@ -361,8 +358,8 @@ $email->sendEmailByKey('welcome_email', $user->email, [
 
 #### Contributing
 
-- If you have any suggestions please let me know : https://github.com/Shaz3e/email-builder/pulls.
-- Please help me improve code https://github.com/Shaz3e/email-builder/pulls
+-   If you have any suggestions please let me know : https://github.com/Shaz3e/email-builder/pulls.
+-   Please help me improve code https://github.com/Shaz3e/email-builder/pulls
 
 #### License
 
@@ -370,8 +367,8 @@ Email Builder with [S3 Dashboard](https://github.com/Shaz3e/S3-Dashboard) is lic
 
 ## Credit
 
-- [Shaz3e](https://www.shaz3e.com) | [YouTube](https://www.youtube.com/@shaz3e) | [Facebook](https://www.facebook.com/shaz3e) | [Twitter](https://twitter.com/shaz3e) | [Instagram](https://www.instagram.com/shaz3e) | [LinkedIn](https://www.linkedin.com/in/shaz3e/)
-- [Diligent Creators](https://www.diligentcreators.com) | [Facebook](https://www.facebook.com/diligentcreators) | [Instagram](https://www.instagram.com/diligentcreators/) | [Twitter](https://twitter.com/diligentcreator) | [LinkedIn](https://www.linkedin.com/company/diligentcreators/) | [Pinterest](https://www.pinterest.com/DiligentCreators/) | [YouTube](https://www.youtube.com/@diligentcreator) [TikTok](https://www.tiktok.com/@diligentcreators) | [Google Map](https://g.page/diligentcreators)
+-   [Shaz3e](https://www.shaz3e.com) | [YouTube](https://www.youtube.com/@shaz3e) | [Facebook](https://www.facebook.com/shaz3e) | [Twitter](https://twitter.com/shaz3e) | [Instagram](https://www.instagram.com/shaz3e) | [LinkedIn](https://www.linkedin.com/in/shaz3e/)
+-   [Diligent Creators](https://www.diligentcreators.com) | [Facebook](https://www.facebook.com/diligentcreators) | [Instagram](https://www.instagram.com/diligentcreators/) | [Twitter](https://twitter.com/diligentcreator) | [LinkedIn](https://www.linkedin.com/company/diligentcreators/) | [Pinterest](https://www.pinterest.com/DiligentCreators/) | [YouTube](https://www.youtube.com/@diligentcreator) [TikTok](https://www.tiktok.com/@diligentcreators) | [Google Map](https://g.page/diligentcreators)
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/shaz3e/email-builder)
 

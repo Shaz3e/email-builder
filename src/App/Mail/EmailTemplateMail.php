@@ -51,23 +51,22 @@ class EmailTemplateMail extends Mailable
     {
         $this->user = $user;
         $this->data = $data;
-        $this->template = EmailTemplate::where('key', $templateKey)->firstOrFail();
 
-        // Initialize placeholders once
+        $this->template = EmailTemplate::where('key', $templateKey)->firstOrFail();
         $this->initializePlaceholders();
 
-        // Get global header and footer templates
-        // If no default templates are found, use empty strings
-        $this->globalHeaderImage = GlobalEmailTemplate::whereNotNull('header_image')->value('header_image');
-        $this->globalHeaderText = GlobalEmailTemplate::whereNotNull('header_text')->value('header_text');
-        $this->globalHeaderTextColor = GlobalEmailTemplate::whereNotNull('header_text_color')->value('header_text_color');
-        $this->globalHeaderBackgroundColor = GlobalEmailTemplate::whereNotNull('header_background_color')->value('header_background_color');
+        $global = GlobalEmailTemplate::first();
 
-        $this->globalFooterImage = GlobalEmailTemplate::whereNotNull('footer_image')->value('footer_image');
-        $this->globalFooterText = GlobalEmailTemplate::whereNotNull('footer_text')->value('footer_text');
-        $this->globalFooterTextColor = GlobalEmailTemplate::whereNotNull('footer_text_color')->value('footer_text_color');
-        $this->globalFooterBackgroundColor = GlobalEmailTemplate::whereNotNull('footer_background_color')->value('footer_background_color');
-        $this->globalFooterBottomImage = GlobalEmailTemplate::whereNotNull('footer_bottom_image')->value('footer_bottom_image');
+        $this->globalHeaderImage = $global?->header_image;
+        $this->globalHeaderText = $global?->header_text;
+        $this->globalHeaderTextColor = $global?->header_text_color;
+        $this->globalHeaderBackgroundColor = $global?->header_background_color;
+
+        $this->globalFooterImage = $global?->footer_image;
+        $this->globalFooterText = $global?->footer_text;
+        $this->globalFooterTextColor = $global?->footer_text_color;
+        $this->globalFooterBackgroundColor = $global?->footer_background_color;
+        $this->globalFooterBottomImage = $global?->footer_bottom_image;
     }
 
     /**
@@ -121,19 +120,19 @@ class EmailTemplateMail extends Mailable
             with: [
                 'subject' => $this->parseContent($this->template->subject ?? 'No Subject'),
 
-                'header_image' => $this->parseContent($this->template->header_image ?? $this->globalHeaderImage),
-                'header_text' => $this->parseContent($this->template->header_text ?? $this->globalHeaderText),
-                'header_text_color' => $this->parseContent($this->template->header_text_color ?? $this->globalHeaderTextColor),
-                'header_background_color' => $this->parseContent($this->template->header_background_color ?? $this->globalHeaderBackgroundColor),
+                'header_image' => $this->parseContent($this->resolveHeader('header_image')),
+                'header_text' => $this->parseContent($this->resolveHeader('header_text')),
+                'header_text_color' => $this->parseContent($this->resolveHeader('header_text_color')),
+                'header_background_color' => $this->parseContent($this->resolveHeader('header_background_color')),
 
-                'body' => $this->parseContent($this->template->body ?? 'No Content'),
+                'body' => $this->parseContent($this->template->body ?? ''),
 
-                'footer_image' => $this->parseContent($this->template->header_image ?? $this->globalFooterImage),
-                'footer_text' => $this->parseContent($this->template->header_text ?? $this->globalFooterText),
-                'footer_text_color' => $this->parseContent($this->template->header_text_color ?? $this->globalFooterTextColor),
-                'footer_background_color' => $this->parseContent($this->template->header_background_color ?? $this->globalFooterBackgroundColor),
-                'footer_bottom_image' => $this->parseContent($this->template->header_background_color ?? $this->globalFooterBottomImage),
-            ],
+                'footer_image' => $this->parseContent($this->resolveFooter('footer_image')),
+                'footer_text' => $this->parseContent($this->resolveFooter('footer_text')),
+                'footer_text_color' => $this->parseContent($this->resolveFooter('footer_text_color')),
+                'footer_background_color' => $this->parseContent($this->resolveFooter('footer_background_color')),
+                'footer_bottom_image' => $this->parseContent($this->resolveFooter('footer_bottom_image')),
+            ]
         );
     }
 
@@ -198,5 +197,32 @@ class EmailTemplateMail extends Mailable
          * with the values from $replacements.
          */
         return str_replace(array_keys($replacements), array_values($replacements), $content);
+    }
+
+    protected const GLOBAL_FIELD_MAP = [
+        'header_image' => 'globalHeaderImage',
+        'header_text' => 'globalHeaderText',
+        'header_text_color' => 'globalHeaderTextColor',
+        'header_background_color' => 'globalHeaderBackgroundColor',
+
+        'footer_image' => 'globalFooterImage',
+        'footer_text' => 'globalFooterText',
+        'footer_text_color' => 'globalFooterTextColor',
+        'footer_background_color' => 'globalFooterBackgroundColor',
+        'footer_bottom_image' => 'globalFooterBottomImage',
+    ];
+
+    protected function resolveHeader(string $field)
+    {
+        return $this->template->usesGlobalHeader()
+            ? $this->{'global'.ucfirst($field)}
+            : $this->template->{$field};
+    }
+
+    protected function resolveFooter(string $field)
+    {
+        return $this->template->usesGlobalFooter()
+            ? $this->{'global'.ucfirst($field)}
+            : $this->template->{$field};
     }
 }

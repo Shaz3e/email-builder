@@ -35,10 +35,10 @@ return new class extends Migration
                 default => $table->longText('body'), // fallback
             };
 
-            
+
             $table->json('placeholders')->nullable();
-            $table->boolean('header')->default(false);
-            $table->boolean('footer')->default(false);
+            $table->boolean('use_global_header')->default(false);
+            $table->boolean('use_global_footer')->default(false);
             $table->timestamps();
         });
     }
