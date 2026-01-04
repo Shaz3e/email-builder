@@ -5,6 +5,8 @@ namespace Shaz3e\EmailBuilder\Providers;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use Shaz3e\EmailBuilder\Services\EmailBuilderService;
+use Shaz3e\EmailBuilder\App\Console\Commands\CleanupEmailBuilderImagesCommand;
+
 
 class EmailBuilderServiceProvider extends ServiceProvider
 {
@@ -52,7 +54,7 @@ class EmailBuilderServiceProvider extends ServiceProvider
         // Register console commands if the application is running in console
         if ($this->app->runningInConsole()) {
             $this->commands([
-                // Todo: Create Console Command
+                CleanupEmailBuilderImagesCommand::class,
             ]);
         }
 
