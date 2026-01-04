@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 
-class CleanupEmailBuilderImagesCommand extends class
-_bottom{
+class CleanupEmailBuilderImagesCommand extends Command
+{
     protected $signature = 'email-builder:cleanup-images
         {--days= : Override retention days}
         {--force : Skip confirmation}';
