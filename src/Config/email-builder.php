@@ -52,4 +52,53 @@ return [
     |
     */
     'body_column_type' => 'longText',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Image Retention & Cleanup
+    |--------------------------------------------------------------------------
+    |
+    | Controls how email images are retained and cleaned up.
+    | Images are NEVER deleted automatically unless cleanup is enabled.
+    |
+    */
+
+    'image_cleanup' => [
+
+        // Master switch
+        'enabled' => true,
+
+        // Default retention period in days
+        'retention_days' => 180,
+
+        // Storage disk
+        'disk' => 'public',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Image Directories
+        |--------------------------------------------------------------------------
+        |
+        | Each directory is scanned independently.
+        | Only images NOT referenced in DB AND older than retention_days are removed.
+        |
+        */
+
+        'directories' => [
+
+            // Global email layout
+            'global' => [
+                'images/email-builder/global-email/header-images',
+                'images/email-builder/global-email/footer-images',
+                'images/email-builder/global-email/footer-bottom-images',
+            ],
+
+            // Per-template images
+            'templates' => [
+                'images/email-builder/email-templates/header-images',
+                'images/email-builder/email-templates/footer-images',
+                'images/email-builder/email-templates/footer-bottom-images',
+            ],
+        ],
+    ],
 ];

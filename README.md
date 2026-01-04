@@ -1,181 +1,171 @@
 # Email Builder
 
-A Laravel package for managing email templates with dynamic placeholders.
+A powerful Laravel package for managing dynamic email templates with placeholders, global layouts, and safe image handling — without creating new Mailables for every email.
 
 ![Packagist Version](https://img.shields.io/packagist/v/shaz3e/email-builder)
 ![Packagist Downloads](https://img.shields.io/packagist/dt/shaz3e/email-builder)
 ![License](https://img.shields.io/packagist/l/shaz3e/email-builder)
 ![Laravel Version](https://img.shields.io/badge/laravel-12.x-blue)
 
+---
+
 ## Introduction
 
-Email Builder allows you to define and manage email templates directly from your dashboard using dynamic placeholders like {{ name }}. You can use it to send system-generated emails such as:
+**Email Builder** allows you to manage email templates directly from your application database using dynamic placeholders such as `{name}`, `{app_url}`, etc.
 
--   Welcome emails
--   Order confirmations
--   Abandoned cart reminders
+It is designed for **real production systems**, where:
 
-No need to write a new Mailable class or job each time — everything is managed dynamically and queueable, based on config.
+* Emails must remain valid even months later
+* Images should not break historical emails
+* Templates are managed dynamically (not hardcoded Mailables)
+* Global headers and footers are reusable
+* Multiple applications or tenants may exist
 
-Install via composer
+Typical use cases:
+
+* Welcome emails
+* Email verification
+* Password reset
+* Order confirmations
+* System notifications
+
+---
+
+## Features
+
+* Database-driven email templates
+* Dynamic placeholders
+* Optional global header & footer
+* Inline CSS for maximum email-client compatibility
+* Safe image handling (no broken historical emails)
+* Optional image cleanup via Artisan command
+* Queue or send instantly (configurable)
+* No need to create new Mailable classes
+
+---
+
+## Installation
+
+Install via Composer:
 
 ```bash
 composer require shaz3e/email-builder
 ```
 
-#### Publishables
+---
 
-Publish views
+## Publish Package Assets
+
+### Publish Views
 
 ```bash
 php artisan vendor:publish --tag=email-builder-views
 ```
 
-Publish config (Recommended)
+### Publish Config (Recommended)
 
 ```bash
 php artisan vendor:publish --tag=email-builder-config
 ```
 
-Publish migrations (Setup config file before migration)
+### Publish Migrations
+
+> ⚠️ Configure the package **before** running migrations.
 
 ```bash
 php artisan vendor:publish --tag=email-builder-migrations
+php artisan migrate
 ```
 
-Config File
+---
+
+## Quick Start
+
+Send your first email in minutes.
+
+```php
+use Shaz3e\EmailBuilder\Services\EmailBuilderService;
+
+$emailBuilder = new EmailBuilderService();
+
+$emailBuilder->sendEmailByKey(
+    'welcome_email',
+    'user@example.com',
+    [
+        'name' => 'John Doe',
+        'app_name' => config('app.name'),
+        'app_url' => route('verification.notice'),
+    ]
+);
+```
+
+> Ensure the `welcome_email` template exists in the database.
+
+---
+
+## Core Concepts
+
+### Email Templates
+
+Stored in the database and identified by a unique `key`.
+
+### Global Header & Footer
+
+Reusable layout applied across templates when enabled.
+
+### Placeholders
+
+Dynamic variables like `{name}` replaced at send time.
+
+### Images
+
+Images are stored on disk and referenced via **absolute URLs** to ensure compatibility across all email clients.
+
+---
+
+## Configuration
+
+`config/email-builder.php`
 
 ```php
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Image Upload Settings
-    |--------------------------------------------------------------------------
-    |
-    | These options control the validation for image uploads. You can define
-    | the allowed file extensions and the maximum file size (in kilobytes).
-    | The default max size is 2048 KB, which equals 2 MB.
-    |
-    */
+
     'image' => [
         'allowed_extensions' => ['jpg', 'jpeg', 'png', 'gif'],
-        'max_size' => 2048, // in KB (2MB)
+        'max_size' => 2048,
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Queue Emails
-    |--------------------------------------------------------------------------
-    |
-    | This option determines whether emails should be queued or sent
-    | immediately. When set to true, all emails will be queued and processed
-    | by a queue worker. When false, emails will be sent instantly.
-    |
-    */
-    'queue_emails' => true, // or false
+    'queue_emails' => false,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Log Email Info
-    |--------------------------------------------------------------------------
-    |
-    | Enable this option to log info-level messages when emails are sent or
-    | queued successfully. Useful for debugging or monitoring email flow.
-    |
-    */
-    'log_info' => false, // or false
+    'log_info' => false,
 
-    /*
-    |--------------------------------------------------------------------------
-    | Email Template Body Column Type
-    |--------------------------------------------------------------------------
-    |
-    | This option defines the database column type used for storing the email
-    | template body content. You may choose between 'text', 'longText', or
-    | 'json' based on your expected content size and structure.
-    |
-    | Supported: "text", "longText", "json"
-    |
-    */
     'body_column_type' => 'longText',
+
+    'image_cleanup' => [
+        'enabled' => true,
+        'retention_days' => 180,
+        'disk' => 'public',
+
+        'directories' => [
+            'global' => [
+                'images/email-builder/global-email/header-images',
+                'images/email-builder/global-email/footer-images',
+                'images/email-builder/global-email/footer-bottom-images',
+            ],
+
+            'templates' => [
+                'images/email-builder/email-templates/header-images',
+                'images/email-builder/email-templates/footer-images',
+                'images/email-builder/email-templates/footer-bottom-images',
+            ],
+        ],
+    ],
 ];
-
 ```
 
-Example Usage Anywhere in Laravel
+---
 
-```php
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use Shaz3e\EmailBuilder\App\Models\EmailTemplate;
-use Shaz3e\EmailBuilder\Facades\EmailBuilder;
-
-class EmailTemplateController extends Controller
-{
-
-    public function index()
-    {
-        return EmailBuilder::allTemplates();
-    }
-
-    public function create()
-    {
-        return view('email-builders.create');
-    }
-
-    public function store(Request $request)
-    {
-        // Validate incoming request
-        $validated = $request->validate([
-            // ...
-        ]);
-
-        // Ensure this method inserts the data correctly
-        $email = EmailBuilder::addTemplate($validated);
-
-        // Redirect to the index page after saving
-        return redirect()->route('email-templates.show', $email);
-    }
-
-    public function show(string $id)
-    {
-        $email = EmailBuilder::getTemplate($id);
-
-        return $email;
-    }
-
-    public function edit(string $id)
-    {
-        $email = EmailTemplate::find($id);
-
-        $placeholders = EmailBuilder::convertPlaceholdersToString($email->placeholders);
-
-        return view('email-builders.edit', compact('email', 'placeholders'));
-    }
-
-    public function update(Request $request, string $id)
-    {
-        // Validate incoming request
-        $validated = $request->validate([
-            // ...
-        ]);
-
-        $email = EmailBuilder::editTemplate($id, $validated);
-
-        return redirect()->route('email-templates.show', $email);
-    }
-
-    public function destory(string $id)
-    {
-        EmailBuilder::deleteTemplate($id);
-
-        return redirect()->route('email-templates.index');
-    }
-}
-```
-
-Use Request or Valdiation within Controller
+## Request Validation Example
 
 ```php
 use App\Rules\ImageRule;
@@ -184,194 +174,89 @@ use Illuminate\Validation\Rule;
 
 class StoreEmailTemplateRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Prepare the data for validation.
-     */
     protected function prepareForValidation(): void
     {
         $this->merge([
             'use_global_header' => $this->boolean('use_global_header') ? 1 : 0,
             'use_global_footer' => $this->boolean('use_global_footer') ? 1 : 0,
         ]);
-
-        if ($this->filled('key')) {
-            $this->merge([
-                'key' => $this->sanitizeKey($this->input('key')),
-            ]);
-        }
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'use_global_header' => ['required', 'in:0,1'],
             'use_global_footer' => ['required', 'in:0,1'],
 
-            'header_image' => [
-                'nullable',
-                'required_if:use_global_header,0',
-                new ImageRule,
-            ],
+            'header_image' => ['nullable', 'required_if:use_global_header,0', new ImageRule],
             'header_text' => ['required_if:use_global_header,0', 'string'],
             'header_text_color' => ['required_if:use_global_header,0', 'string'],
             'header_background_color' => ['required_if:use_global_header,0', 'string'],
 
-            'footer_image' => [
-                'nullable',
-                'required_if:use_global_footer,0',
-                new ImageRule,
-            ],
+            'footer_image' => ['nullable', 'required_if:use_global_footer,0', new ImageRule],
             'footer_text' => ['required_if:use_global_footer,0', 'string'],
             'footer_text_color' => ['required_if:use_global_footer,0', 'string'],
             'footer_background_color' => ['required_if:use_global_footer,0', 'string'],
-            'footer_bottom_image' => [
-                'nullable',
-                'required_if:use_global_footer,0',
-                new ImageRule,
-            ],
 
-            'key' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('email_templates', 'key')->ignore($this->email_template), // Use your route model binding
-            ],
-            'name' => ['required', 'string', 'max:255'],
-            'subject' => ['required', 'string', 'min:3', 'max:255'],
+            'key' => ['required', 'string', Rule::unique('email_templates', 'key')],
+            'name' => ['required', 'string'],
+            'subject' => ['required', 'string'],
             'body' => ['required', 'string'],
-            'placeholders' => ['nullable', 'string'],
         ];
     }
-
-    /**
-     * Sanitize the given key by converting it to lowercase, replacing non-alphanumeric
-     * characters with underscores, and trimming any leading or trailing underscores.
-     *
-     * @param  string  $value  The key to sanitize.
-     * @return string The sanitized key.
-     */
-    protected function sanitizeKey($value)
-    {
-        $key = strtolower($value);
-        $key = preg_replace('/[^a-z0-9]+/', '_', $key);
-
-        return trim($key, '_');
-    }
 }
 ```
 
-Create Image Rule and take advantage of config/email-builder rules
+---
 
-```php
-use Closure;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Http\UploadedFile;
+## Image Retention Policy
 
-class ImageRule implements ValidationRule
-{
-    protected int $maxSize; // in kilobytes (KB)
+* Images are **never deleted automatically**
+* Prevents broken historical emails
+* Cleanup is explicit and controlled
 
-    /**
-     * Create a new rule instance.
-     *
-     * @param  int  $maxSize  Maximum file size in kilobytes (default 2048 KB = 2MB)
-     */
-    public function __construct($maxSize = null)
-    {
-        $this->maxSize = $maxSize ?? config('email-builder.image.max_size');
-    }
+### Cleanup Command
 
-    /**
-     * Run the validation rule.
-     *
-     * @param  \Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
-     */
-    public function validate(string $attribute, mixed $value, Closure $fail): void
-    {
-        // change $attribute to human readable
-        $attribute = str_replace('_', ' ', ucwords($attribute));
-
-        // Check if it is a file and an instance of UploadedFile
-        if (! $value instanceof UploadedFile) {
-            $fail("The {$attribute} must be a valid file.");
-
-            return;
-        }
-
-        // Check if the file is an image
-        if (! str_starts_with($value->getMimeType(), 'image/')) {
-            $fail("The {$attribute} must be an image.");
-
-            return;
-        }
-
-        // Check allowed extensions
-        $allowedExtensions = config('email-builder.image.allowed_extensions');
-        $extension = strtolower($value->getClientOriginalExtension());
-
-        if (! in_array($extension, $allowedExtensions)) {
-            $fail("The {$attribute} must be a file of type: ".implode(', ', $allowedExtensions).'.');
-
-            return;
-        }
-
-        // Check file size (UploadedFile::getSize() returns bytes)
-        if ($value->getSize() / 1024 > $this->maxSize) {
-            $fail("The {$attribute} must not be larger than {$this->maxSize} KB.");
-
-            return;
-        }
-    }
-}
-
+```bash
+php artisan email-builder:cleanup-images
+php artisan email-builder:cleanup-images --days=180
+php artisan email-builder:cleanup-images --force
 ```
 
-```php
-// Than use anywhere where you want to send email
-// Create instance of emailBuilder
-use Shaz3e\EmailBuilder\Services\EmailBuilderService;
-$email = new EmailBuilderService;
+---
 
-$user = User::findOrFail(1); // Send this user an email
+## Email Client Compatibility
 
-$verification_link = route('verification'); // use this route from routes
+Designed for:
 
-$email->sendEmailByKey('welcome_email', $user->email, [
-    'app_name' => config('app.name'),
-    'name' => $user->name,
-    'app_url' => $verification_link,
-]);
-```
+* Gmail (web & mobile)
+* Outlook (Windows & macOS)
+* Yahoo Mail
+* iCloud Mail
+* Hotmail
+* Custom webmail clients
 
-#### Contributing
+Uses conservative HTML and inline CSS.
 
--   If you have any suggestions please let me know : https://github.com/Shaz3e/email-builder/pulls.
--   Please help me improve code https://github.com/Shaz3e/email-builder/pulls
+---
 
-#### License
+## Contributing
 
-Email Builder with [S3 Dashboard](https://github.com/Shaz3e/S3-Dashboard) is licensed under the MIT license. Enjoy!
+Pull requests are welcome.
 
-## Credit
+GitHub: [https://github.com/Shaz3e/email-builder](https://github.com/Shaz3e/email-builder)
 
--   [Shaz3e](https://www.shaz3e.com) | [YouTube](https://www.youtube.com/@shaz3e) | [Facebook](https://www.facebook.com/shaz3e) | [Twitter](https://twitter.com/shaz3e) | [Instagram](https://www.instagram.com/shaz3e) | [LinkedIn](https://www.linkedin.com/in/shaz3e/)
--   [Diligent Creators](https://www.diligentcreators.com) | [Facebook](https://www.facebook.com/diligentcreators) | [Instagram](https://www.instagram.com/diligentcreators/) | [Twitter](https://twitter.com/diligentcreator) | [LinkedIn](https://www.linkedin.com/company/diligentcreators/) | [Pinterest](https://www.pinterest.com/DiligentCreators/) | [YouTube](https://www.youtube.com/@diligentcreator) [TikTok](https://www.tiktok.com/@diligentcreators) | [Google Map](https://g.page/diligentcreators)
+---
+
+## License
+
+Email Builder is licensed under the **MIT License**.
+
+---
+
+## Credits
+
+* **Shaz3e** – [https://www.shaz3e.com](https://www.shaz3e.com)
+* **Diligent Creators** – [https://www.diligentcreators.com](https://www.diligentcreators.com)
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/shaz3e/email-builder)
-
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=shaz3e&show_icons=true&count_private=true&theme=default)
-
-![GitHub Contributions Graph](https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=shaz3e&theme=default)
