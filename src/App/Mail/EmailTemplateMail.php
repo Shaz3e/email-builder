@@ -120,18 +120,18 @@ class EmailTemplateMail extends Mailable
             with: [
                 'subject' => $this->parseContent($this->template->subject ?? 'No Subject'),
 
-                'header_image' => $this->parseContent($this->resolveHeader('header_image')),
+                'header_image' => $this->emailImageUrl($this->resolveHeader('header_image')),
                 'header_text' => $this->parseContent($this->resolveHeader('header_text')),
-                'header_text_color' => $this->parseContent($this->resolveHeader('header_text_color')),
-                'header_background_color' => $this->parseContent($this->resolveHeader('header_background_color')),
+                'header_text_color' => $this->resolveHeader('header_text_color'),
+                'header_background_color' => $this->resolveHeader('header_background_color'),
 
                 'body' => $this->parseContent($this->template->body ?? ''),
 
-                'footer_image' => $this->parseContent($this->resolveFooter('footer_image')),
+                'footer_image' => $this->emailImageUrl($this->resolveFooter('footer_image')),
                 'footer_text' => $this->parseContent($this->resolveFooter('footer_text')),
-                'footer_text_color' => $this->parseContent($this->resolveFooter('footer_text_color')),
-                'footer_background_color' => $this->parseContent($this->resolveFooter('footer_background_color')),
-                'footer_bottom_image' => $this->parseContent($this->resolveFooter('footer_bottom_image')),
+                'footer_text_color' => $this->resolveFooter('footer_text_color'),
+                'footer_background_color' => $this->resolveFooter('footer_background_color'),
+                'footer_bottom_image' => $this->emailImageUrl($this->resolveFooter('footer_bottom_image')),
             ]
         );
     }
@@ -212,6 +212,20 @@ class EmailTemplateMail extends Mailable
         'footer_bottom_image' => 'globalFooterBottomImage',
     ];
 
+    protected function emailImageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        // Already absolute (future-proof)
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        // Storage::url() → /storage/...
+        return rtrim(config('app.url'), '/') . Storage::url($path);
+    }
     protected function resolveHeader(string $field)
     {
         if ($this->template->usesGlobalHeader()) {

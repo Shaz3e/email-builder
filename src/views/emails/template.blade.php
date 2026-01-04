@@ -19,7 +19,7 @@
                 <tr>
                     <td align="center" style="padding:0; margin:0;">
                         <img
-                            src="{{ asset($header_image) }}"
+                            src="{{ $header_image }}"
                             width="600"
                             style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none; text-decoration:none;"
                             alt="Header Image"
@@ -69,7 +69,7 @@
                 <tr>
                     <td align="center" style="padding:0; margin:0;">
                         <img
-                            src="{{ asset($footer_image) }}"
+                            src="{{ $footer_image }}"
                             width="600"
                             style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none; text-decoration:none;"
                             alt="Footer Image"
@@ -103,7 +103,7 @@
                 <tr>
                     <td align="center" style="padding:0; margin:0;">
                         <img
-                            src="{{ asset($footer_bottom_image) }}"
+                            src="{{ $footer_bottom_image }}"
                             width="600"
                             style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none; text-decoration:none;"
                             alt="Footer Bottom Image"
