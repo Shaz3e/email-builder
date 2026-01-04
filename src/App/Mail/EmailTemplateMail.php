@@ -214,15 +214,21 @@ class EmailTemplateMail extends Mailable
 
     protected function resolveHeader(string $field)
     {
-        return $this->template->usesGlobalHeader()
-            ? $this->{'global'.ucfirst($field)}
-            : $this->template->{$field};
+        if ($this->template->usesGlobalHeader()) {
+            $property = self::GLOBAL_FIELD_MAP[$field] ?? null;
+            return $property ? $this->{$property} : null;
+        }
+
+        return $this->template->{$field};
     }
 
     protected function resolveFooter(string $field)
     {
-        return $this->template->usesGlobalFooter()
-            ? $this->{'global'.ucfirst($field)}
-            : $this->template->{$field};
+        if ($this->template->usesGlobalFooter()) {
+            $property = self::GLOBAL_FIELD_MAP[$field] ?? null;
+            return $property ? $this->{$property} : null;
+        }
+
+        return $this->template->{$field};
     }
 }
