@@ -7,6 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 use Shaz3e\EmailBuilder\App\Models\EmailTemplate;
 use Shaz3e\EmailBuilder\App\Models\GlobalEmailTemplate;
 
